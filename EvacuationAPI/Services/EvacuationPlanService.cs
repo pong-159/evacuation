@@ -95,10 +95,14 @@ public class EvacuationPlanService : IEvacuationPlanService
     {
         try
         {
-            var evacuationPlan = await _context.EvacuationPlans.FirstAsync(p =>
+            var evacuationPlan = await _context.EvacuationPlans.FirstOrDefaultAsync(p =>
                 p.EvacuationStatus == EvacuationStatusEnum.InProgress
                 && p.VehicleId == vehicleId);
 
+            if (evacuationPlan == null)
+            {
+                throw new Exception("No Evacuation Plan Found");
+            }
             evacuationPlan.EvacuationStatus = EvacuationStatusEnum.Completed;
             evacuationPlan.NumberOfPeople = numberOfPeople;
 
@@ -117,14 +121,17 @@ public class EvacuationPlanService : IEvacuationPlanService
             var cachedData = _cacheService.Get<IEnumerable<EvacuationZones>>();
             var updatedData =  cachedData?.Select(c =>
             {
+                _logger.LogDebug("Processing evacuation zone: " +  c.Id + ", with evacuationZone: " + evacuationZone.Id );
+                
                 if (c.Id == evacuationZone.Id)
                 {
                     return evacuationZone;
                 }
 
                 return c;
-            }).FirstOrDefault();
+            }).ToList();
             
+            _logger.LogInformation("Updated evacuation zone data: " + updatedData);
             if(updatedData != null) _cacheService.Update(updatedData);
 
             await _context.SaveChangesAsync();
@@ -158,7 +165,7 @@ public class EvacuationPlanService : IEvacuationPlanService
     {
         try
         {
-            await _context.EvacuationPlans.ExecuteDeleteAsync();
+            _context.EvacuationPlans.RemoveRange(_context.EvacuationPlans);
 
             var vehicles = await _context.Vehicles.ToListAsync();
             foreach (var vehicle in vehicles)
@@ -168,6 +175,8 @@ public class EvacuationPlanService : IEvacuationPlanService
 
             _context.Vehicles.UpdateRange(vehicles);
             await _context.SaveChangesAsync();
+
+            _cacheService.Clear();
         }
         catch (Exception ex)
         {

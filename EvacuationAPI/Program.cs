@@ -3,18 +3,28 @@ using EvacuationAPI.AppDbContext;
 using EvacuationAPI.Caching;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .WriteTo.Console()
-    .CreateLogger();
+// Log.Logger = new LoggerConfiguration()
+//     .MinimumLevel.Debug()
+//     .WriteTo.Console()
+//     .CreateLogger();
 
 // Add services to the container.
 
 builder.Services.AddLogging(loggingBuilder =>
-    loggingBuilder.AddSerilog(dispose: true));
+{
+    loggingBuilder.ClearProviders();
+    loggingBuilder.AddSerilog(new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+        .MinimumLevel.Override("System", LogEventLevel.Information) 
+        .WriteTo.Console()
+        .CreateLogger());
+});
+    
 
 builder.Services.AddStackExchangeRedisCache(options =>
     {

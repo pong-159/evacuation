@@ -14,7 +14,9 @@ public interface ICacheService
     
     void Update<T>(string key, T value);
     
-    void Update<T>( T value);
+    void Update<T>( T? value);
+    
+    void Clear();
     
   
     

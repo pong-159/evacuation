@@ -1,4 +1,5 @@
 ﻿using EvacuationAPI.DTOs;
+using EvacuationAPI.Models;
 
 namespace EvacuationAPI;
 
@@ -8,4 +9,6 @@ public interface IEvacuationService
     Task<IEnumerable<EvacuationStatusDTO>> ListEvacuationZone();
 
     Task clearZonesAsync();
+
+    EvacuationStatusDTO ConvertZoneToEvacuationStatusDto(EvacuationZones evacuationZones);
 }

@@ -50,7 +50,7 @@ public class EvacuationService : IEvacuationService
             return result;
     }
 
-    public static EvacuationStatusDTO ConvertZoneToEvacuationStatusDto(EvacuationZones ez)
+    public EvacuationStatusDTO ConvertZoneToEvacuationStatusDto(EvacuationZones ez)
     {
         return new EvacuationStatusDTO(ez.Id, new LocationCoordinate(ez.Latitude, ez.Longitude), ez.NumberOfPeople,ez.NumberOfEvacuatedPeople, ez.NumberOfRemainingPeople() ,ez.UrgencyLevel);
     }

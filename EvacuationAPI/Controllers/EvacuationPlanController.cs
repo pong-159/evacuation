@@ -48,10 +48,19 @@ public class EvacuationPlanController : ControllerBase
         try
         {
             _logger.LogInformation("Getting Evacuation Status");
-            var cache =  _cacheService.Get<IEnumerable<EvacuationStatusDTO>>("status");
-            if (cache != null)
+            _logger.LogInformation("Retrieving data from cache");
+            var cache =  _cacheService.Get<IEnumerable<EvacuationZones>>();
+            _logger.LogInformation("Cache data retrieved: {CacheCount} items", cache?.Count() ?? 0);
+            // foreach (var c in cache)
+            // {
+            //     _logger.LogInformation("Cache data retrieved:  " + c);
+            // }
+         
+            
+            var dto = cache?.Select(c => _evacuationService.ConvertZoneToEvacuationStatusDto(c)).ToList();
+            if (dto != null)
             {
-                return Ok(cache);
+                return Ok(dto);
             }
             var result = await _evacuationService.ListEvacuationZone();
             return Ok(result);
@@ -88,7 +97,7 @@ public class EvacuationPlanController : ControllerBase
         {
             _logger.LogInformation("Clearing Evacuation Plan and Reset Everthing");
             await _evacuationPlanService.clearAllAsync();
-
+            
             return Ok("Cleared");
         }
         catch (Exception ex)

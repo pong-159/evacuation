@@ -1,0 +1,45 @@
+using EvacuationAPI;
+using EvacuationAPI.AppDbContext;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+
+var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .CreateLogger();
+
+// Add services to the container.
+
+builder.Services.AddLogging(loggingBuilder =>
+    loggingBuilder.AddSerilog(dispose: true));
+
+builder.Services.AddControllers();
+
+
+
+builder.Services.AddScoped<EvacuationPlanService>();
+builder.Services.AddScoped<EvacuationService>();
+builder.Services.AddScoped<VehicleService>();
+
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseInMemoryDatabase("TestingDB"));
+
+var app = builder.Build();
+
+
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment()) app.MapOpenApi();
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

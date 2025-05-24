@@ -6,8 +6,7 @@ using Serilog;
 namespace EvacuationAPI;
 
 
-
-public class VehicleService
+public class VehicleService : IVehicleService
 {
     private readonly AppDbContext.AppDbContext _context;
 
@@ -32,7 +31,7 @@ public class VehicleService
         }
     }
     
-    public async Task<List<Vehicles>> ListVehicle()
+    public async Task<IEnumerable<Vehicles>> ListVehicle()
     {
         return await _context.Vehicles.ToListAsync();
         

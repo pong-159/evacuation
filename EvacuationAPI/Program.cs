@@ -1,5 +1,6 @@
 using EvacuationAPI;
 using EvacuationAPI.AppDbContext;
+using EvacuationAPI.Caching;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -15,13 +16,21 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddLogging(loggingBuilder =>
     loggingBuilder.AddSerilog(dispose: true));
 
+builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = builder.Configuration.GetConnectionString("Redis");
+        options.InstanceName = "EvacuationAPI";
+    }
+
+);
+
 builder.Services.AddControllers();
 
 
-
-builder.Services.AddScoped<EvacuationPlanService>();
-builder.Services.AddScoped<EvacuationService>();
-builder.Services.AddScoped<VehicleService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<IEvacuationPlanService, EvacuationPlanService>();
+builder.Services.AddScoped<IEvacuationService, EvacuationService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

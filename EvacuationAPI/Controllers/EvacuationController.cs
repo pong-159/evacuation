@@ -9,11 +9,11 @@ namespace EvacuationAPI.Controllers;
 [ApiController]
 public class EvacuationController
 {
-    private readonly EvacuationService _evacuationService;
+    private readonly IEvacuationService _evacuationService;
     
     private readonly ILogger _logger;
 
-    public EvacuationController(EvacuationService evacuationService, ILogger<EvacuationController> logger)
+    public EvacuationController(IEvacuationService evacuationService, ILogger<EvacuationController> logger)
     {
         _evacuationService = evacuationService;
         _logger = logger;

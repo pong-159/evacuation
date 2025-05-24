@@ -16,7 +16,9 @@
         <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.0.1-dev-00953" />
         <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+        <PackageReference Include="StackExchange.Redis" Version="2.8.37" />
         <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.4" />
+        <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="9.2.0-rc.3" />
     </ItemGroup>
 
 </Project>

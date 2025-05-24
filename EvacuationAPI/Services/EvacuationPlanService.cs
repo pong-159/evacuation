@@ -1,4 +1,5 @@
-﻿using EvacuationAPI.DTOs;
+﻿using EvacuationAPI.Caching;
+using EvacuationAPI.DTOs;
 using EvacuationAPI.Entities.Enums;
 using EvacuationAPI.Models;
 using EvacuationAPI.Utils;
@@ -8,15 +9,19 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace EvacuationAPI;
 
-public class EvacuationPlanService
+
+
+public class EvacuationPlanService : IEvacuationPlanService
 {
     private readonly AppDbContext.AppDbContext _context;
     private readonly ILogger _logger;
+    private readonly ICacheService _cacheService;
 
-    public EvacuationPlanService(AppDbContext.AppDbContext context, ILogger<EvacuationPlanService> logger)
+    public EvacuationPlanService(AppDbContext.AppDbContext context, ILogger<EvacuationPlanService> logger, ICacheService cacheService)
     {
         _context = context;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     public async Task createPlanAsync()
@@ -108,6 +113,19 @@ public class EvacuationPlanService
             }
 
             _context.EvacuationZones.Update(evacuationZone);
+            
+            var cachedData = _cacheService.Get<IEnumerable<EvacuationZones>>();
+            var updatedData =  cachedData?.Select(c =>
+            {
+                if (c.Id == evacuationZone.Id)
+                {
+                    return evacuationZone;
+                }
+
+                return c;
+            }).FirstOrDefault();
+            
+            if(updatedData != null) _cacheService.Update(updatedData);
 
             await _context.SaveChangesAsync();
             return evacuationPlan;
@@ -121,7 +139,7 @@ public class EvacuationPlanService
 
     public async Task<IEnumerable<EvacuationPlansDTO>> listPlanAsync()
     {
-        return await _context.EvacuationPlans.Select(ep =>
+        var result =  await _context.EvacuationPlans.Select(ep =>
             new EvacuationPlansDTO(
                 ep.ZoneId,
                 ep.VehicleId,
@@ -129,6 +147,11 @@ public class EvacuationPlanService
                 ep.NumberOfPeople
             )
         ).ToListAsync();
+        
+    
+        
+        result.ForEach(r => _logger.LogDebug("Evacuation Plan {Plan}", r));
+        return result;
     }
 
     public async Task clearAllAsync()

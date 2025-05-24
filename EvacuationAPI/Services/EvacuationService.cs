@@ -1,17 +1,25 @@
-﻿using EvacuationAPI.DTOs;
+﻿using EvacuationAPI.Caching;
+using EvacuationAPI.DTOs;
 using EvacuationAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EvacuationAPI;
 
-public class EvacuationService
+
+
+
+public class EvacuationService : IEvacuationService
 {
     private readonly AppDbContext.AppDbContext _context;
+    private readonly ICacheService _cache;
 
-    public EvacuationService(AppDbContext.AppDbContext context)
+    public EvacuationService(AppDbContext.AppDbContext context, ICacheService cache)
     {
         _context = context;
+        _cache = cache;
         initData();
     }
 
@@ -32,15 +40,22 @@ public class EvacuationService
     
     public async Task<IEnumerable<EvacuationStatusDTO>> ListEvacuationZone()
     {
+            var resultZone =  await _context.EvacuationZones
+                .ToListAsync();
+            var result = resultZone.Select(ConvertZoneToEvacuationStatusDto).ToList();
             
-            return await _context.EvacuationZones
-                .Select(ez => 
-                    new EvacuationStatusDTO(ez.Id, new LocationCoordinate(ez.Latitude, ez.Longitude), ez.NumberOfPeople,ez.NumberOfEvacuatedPeople, ez.NumberOfRemainingPeople() ,ez.UrgencyLevel)).ToListAsync();
-        
+            _cache.Update(resultZone);
+            
+            
+            return result;
     }
-    
-    
-    
+
+    public static EvacuationStatusDTO ConvertZoneToEvacuationStatusDto(EvacuationZones ez)
+    {
+        return new EvacuationStatusDTO(ez.Id, new LocationCoordinate(ez.Latitude, ez.Longitude), ez.NumberOfPeople,ez.NumberOfEvacuatedPeople, ez.NumberOfRemainingPeople() ,ez.UrgencyLevel);
+    }
+
+
     public void initData(){
         
         if(_context.EvacuationZones.Any()) return;

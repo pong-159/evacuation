@@ -1,4 +1,6 @@
-﻿using EvacuationAPI.DTOs;
+﻿using EvacuationAPI.Caching;
+using EvacuationAPI.DTOs;
+using EvacuationAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -9,15 +11,17 @@ namespace EvacuationAPI.Controllers;
 [ApiController]
 public class EvacuationPlanController : ControllerBase
 {
-    private readonly EvacuationPlanService _evacuationPlanService;
-    private readonly EvacuationService _evacuationService;
+    private readonly IEvacuationPlanService _evacuationPlanService;
+    private readonly IEvacuationService _evacuationService;
     private readonly ILogger _logger;
+    private readonly ICacheService _cacheService;
 
-    public EvacuationPlanController(EvacuationService evacuationService, EvacuationPlanService evacuationPlanService, ILogger<EvacuationPlanController> logger)
+    public EvacuationPlanController(IEvacuationService evacuationService, IEvacuationPlanService evacuationPlanService, ILogger<EvacuationPlanController> logger, ICacheService cacheService)
     {
         _evacuationService = evacuationService;
         _evacuationPlanService = evacuationPlanService;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     [HttpPost]
@@ -44,6 +48,11 @@ public class EvacuationPlanController : ControllerBase
         try
         {
             _logger.LogInformation("Getting Evacuation Status");
+            var cache =  _cacheService.Get<IEnumerable<EvacuationStatusDTO>>("status");
+            if (cache != null)
+            {
+                return Ok(cache);
+            }
             var result = await _evacuationService.ListEvacuationZone();
             return Ok(result);
         }

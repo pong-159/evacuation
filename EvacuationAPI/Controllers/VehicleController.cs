@@ -10,15 +10,14 @@ namespace EvacuationAPI.Controllers;
 [ApiController]
 public class VehicleController
 {
-    private readonly VehicleService _vehicleService;
+    private readonly IVehicleService _vehicleService;
     private readonly ILogger _logger;
 
-    public VehicleController(VehicleService vehicleService, ILogger<EvacuationPlanController> logger)
+    public VehicleController(IVehicleService vehicleService, ILogger<VehicleController> logger)
     {
         _vehicleService = vehicleService;
         _logger = logger;
     }
-
     [HttpPost]
     public async Task<IActionResult> addVehicle([FromBody] VehicleDto vehicleDto)
     {

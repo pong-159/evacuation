@@ -16,6 +16,13 @@ public static class CalculatorUtils
         return Haversine(location1.Latitude, location2.Latitude, location1.Longitude, location2.Longitude);
     }
     
+    public static double GetDistance(Vehicles vehicle, EvacuationZones evacuationZones)
+    {
+        // return 100;
+        // Haversine formula
+        return Haversine(vehicle.Latitude, evacuationZones.Latitude, vehicle.Longitude, evacuationZones.Longitude);
+    }
+    
     public static double GetDistance(double lat1, double lat2, double lon1, double lon2)
     {
         // return 100;

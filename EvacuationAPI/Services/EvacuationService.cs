@@ -20,7 +20,6 @@ public class EvacuationService : IEvacuationService
     {
         _context = context;
         _cache = cache;
-        initData();
     }
 
     public async Task<bool> addEvacuationZone(EvacuationZonesDTO evacuationZonesDto)
@@ -29,7 +28,12 @@ public class EvacuationService : IEvacuationService
         {
             var evacuationZone = new EvacuationZones(evacuationZonesDto);
              _context.EvacuationZones.Add(evacuationZone);
-            await _context.SaveChangesAsync();
+
+             
+             await _context.SaveChangesAsync();
+
+             var evacuationZonesList = _context.EvacuationZones.ToList();
+            _cache.Update(evacuationZonesList);
             return true;
         }
         catch (Exception ex)
@@ -56,17 +60,7 @@ public class EvacuationService : IEvacuationService
     }
 
 
-    public void initData(){
-        
-        if(_context.EvacuationZones.Any()) return;
-        for (int i = 1; i <= 10; i++)
-        {
-            var zone = new EvacuationZones("z" + i, new LocationCoordinate(12.39 * i, 21.684 * i), 10 * i, (i % 5) + 1 );
-            _context.EvacuationZones.Add(zone);
-        }
-        _context.SaveChanges();
-        
-    }
+
     
     public async Task clearZonesAsync()
     {

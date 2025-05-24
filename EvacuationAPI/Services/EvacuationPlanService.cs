@@ -42,11 +42,12 @@ public class EvacuationPlanService : IEvacuationPlanService
                 while (numberOfPeople > 0)
                 {
                     _logger.LogDebug("Looking for Vehicles");
-                    _logger.LogDebug("Vehicles Size {Count}", await _context.Vehicles.CountAsync());
+                    // _logger.LogDebug("Vehicles Size {Count}", await _context.Vehicles.CountAsync());
                     
                     var vehicles = await _context.Vehicles
                         .Where(v => v.IsAvailable && !vehicleInUsed.Contains(v.Id))
-                        .OrderByDescending(v => Math.Abs(v.Capacity - numberOfPeople))
+                        .OrderBy(v => Math.Abs(CalculatorUtils.GetDistance(v,evacuationZone)))
+                        .ThenBy(v => Math.Abs(v.Capacity - numberOfPeople))
                         .FirstOrDefaultAsync();
 
                     _logger.LogDebug("Vehicles value {Vehicle}", vehicles);
@@ -55,8 +56,7 @@ public class EvacuationPlanService : IEvacuationPlanService
 
                     var numberOfPeopleToEvacuate = Math.Min(vehicles.Capacity, numberOfPeople);
                     var vehicleSpeed = CalculatorUtils.ConvertKphToMps(vehicles.Speed);
-                    var distance = CalculatorUtils.GetDistance(evacuationZone.Latitude, vehicles.Latitude,
-                        evacuationZone.Longitude, vehicles.Longitude);
+                    var distance = CalculatorUtils.GetDistance(vehicles, evacuationZone);
                     var time = distance / vehicleSpeed;
                     var timeToEvacuateInMinute = time * 60;
                     

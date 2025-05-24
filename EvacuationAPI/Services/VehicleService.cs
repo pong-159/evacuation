@@ -13,7 +13,7 @@ public class VehicleService : IVehicleService
     public VehicleService(AppDbContext.AppDbContext context)
     {
         _context = context;
-        initData();
+ 
     }
 
     public async Task<bool> addVehicle(VehicleDto vehicleDto)
@@ -37,23 +37,7 @@ public class VehicleService : IVehicleService
         
     }
 
-    public void initData()
-    {
-        if(_context.Vehicles.Any()) return;
-        for (int i = 1; i <= 10; i++)
-        {
-            var vehicle = new Vehicles(
-                "v" +  i,
-                10 +i,
-                "Car",
-                new LocationCoordinate(10 * i, 10 * i),
-                10 +i);
-            _context.Vehicles.Add(vehicle);
-        }
-        _context.SaveChanges();
-        
-        
-    }
+
     
     public async Task clearVehiclesAsync()
     {

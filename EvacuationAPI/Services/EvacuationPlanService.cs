@@ -16,6 +16,7 @@ public class EvacuationPlanService : IEvacuationPlanService
     private readonly AppDbContext.AppDbContext _context;
     private readonly ILogger _logger;
     private readonly ICacheService _cacheService;
+    private double _abs;
 
     public EvacuationPlanService(AppDbContext.AppDbContext context, ILogger<EvacuationPlanService> logger, ICacheService cacheService)
     {
@@ -44,11 +45,11 @@ public class EvacuationPlanService : IEvacuationPlanService
                     _logger.LogDebug("Looking for Vehicles");
                     // _logger.LogDebug("Vehicles Size {Count}", await _context.Vehicles.CountAsync());
                     
-                    var vehicles = await _context.Vehicles
-                        .Where(v => v.IsAvailable && !vehicleInUsed.Contains(v.Id))
+                    var vehiclesList = await _context.Vehicles.ToListAsync();
+                    var vehicles =   vehiclesList.Where(v => v.IsAvailable && !vehicleInUsed.Contains(v.Id))
                         .OrderBy(v => Math.Abs(CalculatorUtils.GetDistance(v,evacuationZone)))
                         .ThenBy(v => Math.Abs(v.Capacity - numberOfPeople))
-                        .FirstOrDefaultAsync();
+                        .FirstOrDefault();
 
                     _logger.LogDebug("Vehicles value {Vehicle}", vehicles);
                     if (vehicles == null) break;
